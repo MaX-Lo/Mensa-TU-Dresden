@@ -11,7 +11,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -20,13 +19,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
-    private TextView tvTest;
 
     private RequestQueue queue;
     private String endpoint;
@@ -49,8 +48,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        tvTest = findViewById(R.id.tvTest);
-
         // Instantiate the RequestQueue.
         queue = Volley.newRequestQueue(this);
         endpoint = "http://openmensa.org/api/v2";
@@ -61,17 +58,39 @@ public class MainActivity extends AppCompatActivity
         lvMeals.setAdapter(adapter);
     }
 
-    private void addMeal(String meal) {
-        meals.add(meal);
+    private void addMeals(String rawData, String date) {
+        List<Meal> mealsToday = parseData(rawData);
+
+        meals.add(String.format("--- %s ---", date));
+        for (int i=0; i < mealsToday.size(); i++) {
+            meals.add(mealsToday.get(i).name);
+        }
+
         adapter.notifyDataSetChanged();
     }
 
-
+    private List<Meal> parseData(String rawData) {
+        List<Meal> meals = new ArrayList<>();
+        JSONParser jsonParser = new JSONParser();
+        try {
+            meals = jsonParser.readJson(rawData);
+        } catch (IOException e) {
+            System.out.println("Error while parsing Json");
+            e.printStackTrace();
+        }
+        return meals;
+    }
 
     void handleMensaChange(String newMensaID) {
-
+        updateTitle(getMensaName(newMensaID));
+        meals.clear();
         for (String date:  DateHelper.getWeekDatesTillSunday())
             fetchMealsData(newMensaID, date);
+    }
+
+    private void updateTitle(String title) {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(title);
     }
 
     private String getMensaName(String mensaID) {
@@ -91,15 +110,8 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Fetch meals for one week. Starting with current date and ending with Sunday.
-     *
-     * Some mensaID's for Dresden:
-     * mensaID - name
-     * 78 - Zeltschloesschen
-     * 79 - Alte Mensa
-     * 82 - Siedepunkt
-     * 85 - WUeins
      */
-    public void fetchMealsData(String mensaID, String date) {
+    public void fetchMealsData(String mensaID, final String date) {
         String url = endpoint + String.format("/canteens/%s/days/:%s/meals", mensaID, date);
 
         // Request a string response from the provided URL.
@@ -107,7 +119,7 @@ public class MainActivity extends AppCompatActivity
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        addMeal(response);
+                        addMeals(response, date);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -158,15 +170,13 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_alte_mensa) {
-            tvTest.setText("Lade Essen in der Alten Mensa...");
             handleMensaChange("79");
         } else if (id == R.id.nav_zelt_schloss) {
-
+            handleMensaChange("78");
         } else if (id == R.id.nav_siedepunkt) {
-            tvTest.setText("Lade Essen im Siedepunkt...");
             handleMensaChange("82");
         } else if (id == R.id.nav_wu_eins) {
-
+            handleMensaChange("85");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

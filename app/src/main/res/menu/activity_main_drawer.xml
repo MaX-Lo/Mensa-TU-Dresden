@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_alte_mensa"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Alte Mensa" />
+        <item
+            android:id="@+id/nav_zelt_schloss"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Zelltschlößschen" />
+        <item
+            android:id="@+id/nav_siedepunkt"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Siedepunkt" />
+        <item
+            android:id="@+id/nav_wu_eins"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="WU-Eins" />
+    </group>
+</menu>

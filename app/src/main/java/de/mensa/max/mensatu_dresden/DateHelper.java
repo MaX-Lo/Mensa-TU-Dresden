@@ -33,6 +33,9 @@ class DateHelper {
         Calendar cal = Calendar.getInstance();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
+        // ToDo remove
+        cal.add(Calendar.DATE, 5);
+
         dates.add(dateFormat.format(cal.getTime()));
         cal.add(Calendar.DATE, 1);
         // 1 = Sunday therefore we have to stop on 2 = Monday

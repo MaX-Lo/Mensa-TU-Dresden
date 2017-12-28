@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -18,7 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -28,6 +30,8 @@ public class MainActivity extends AppCompatActivity
 
     private RequestQueue queue;
     private String endpoint;
+    private List<String> meals;
+    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,46 +54,65 @@ public class MainActivity extends AppCompatActivity
         // Instantiate the RequestQueue.
         queue = Volley.newRequestQueue(this);
         endpoint = "http://openmensa.org/api/v2";
+
+        meals = new LinkedList<>();
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, meals);
+        ListView lvMeals = (ListView) findViewById(R.id.lvMeals);
+        lvMeals.setAdapter(adapter);
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+    private void addMeal(String meal) {
+        meals.add(meal);
+        adapter.notifyDataSetChanged();
     }
+
+
 
     void handleMensaChange(String newMensaID) {
+
         for (String date:  DateHelper.getWeekDatesTillSunday())
-            fetchData(newMensaID, date);
+            fetchMealsData(newMensaID, date);
+    }
+
+    private String getMensaName(String mensaID) {
+        switch (mensaID) {
+            case "78":
+                return "Zeltschloessschen";
+            case "79":
+                return "Alte Mensa";
+            case "82":
+                return "Siedepunkt";
+            case "85":
+                return "WUeins";
+            default:
+                return "kenn ich nicht";
+        }
     }
 
     /**
      * Fetch meals for one week. Starting with current date and ending with Sunday.
      *
-     * Some id's for Dresden:
-     * id - name
+     * Some mensaID's for Dresden:
+     * mensaID - name
      * 78 - Zeltschloesschen
      * 79 - Alte Mensa
      * 82 - Siedepunkt
      * 85 - WUeins
      */
-    public void fetchData(String id, String date) {
-        String url = endpoint + String.format("/canteens/%s/days/:%s/meals", id, date);
+    public void fetchMealsData(String mensaID, String date) {
+        String url = endpoint + String.format("/canteens/%s/days/:%s/meals", mensaID, date);
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        System.out.println(response);
+                        addMeal(response);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                // ToDo implement proper error handling like notifying the user
                 System.out.println("That didn't work! No connection?");
             }
         });
@@ -117,6 +140,16 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override

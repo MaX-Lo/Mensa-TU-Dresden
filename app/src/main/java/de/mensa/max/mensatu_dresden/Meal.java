@@ -1,9 +1,10 @@
 package de.mensa.max.mensatu_dresden;
 
-import android.util.Log;
-
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.mensa.max.mensatu_dresden.Helpers.FormatHelper;
 
 /**
  * Created by max on 28.12.17.
@@ -26,7 +27,11 @@ class Meal {
         this.id = id;
         this.name = name;
         this.notes = notes;
-        this.prices = prices;
+
+        this.prices = new HashMap<String, String>();
+        for (String customer_type : prices.keySet()) {
+            this.prices.put(customer_type, FormatHelper.formatPricing(prices.get(customer_type)));
+        }
         this.category = category;
     }
 

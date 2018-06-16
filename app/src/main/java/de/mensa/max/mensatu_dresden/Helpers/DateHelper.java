@@ -1,4 +1,4 @@
-package de.mensa.max.mensatu_dresden;
+package de.mensa.max.mensatu_dresden.Helpers;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-class DateHelper {
+public class DateHelper {
 
     private final String DATE_FORMAT = "yyyy-MM-dd";
 
@@ -29,7 +29,7 @@ class DateHelper {
      *
      * @return all dates from now to the next sunday
      */
-    static List<String> getNextNDays(int n) {
+    public static List<String> getNextNDays(int n) {
         List<String> dates = new ArrayList<>();
 
         Calendar cal = Calendar.getInstance();
@@ -44,9 +44,9 @@ class DateHelper {
         return dates;
     }
 
-    static List<String> getNextNWeekdays(int n) {
+    public static List<String> getNextNWeekdays(int n) {
         Calendar cal = Calendar.getInstance();
-        String[] Weekdays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", };
+        String[] Weekdays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
         List<String> nextNWeekdays = new LinkedList<>();
         for (int i=0; i < n; i++) {
             nextNWeekdays.add(Weekdays[cal.get(Calendar.DAY_OF_WEEK) - 1]);

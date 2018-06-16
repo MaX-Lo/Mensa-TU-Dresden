@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.mensa.max.mensatu_dresden.Helpers.DateHelper;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -40,10 +42,7 @@ public class MainActivity extends AppCompatActivity
     // Mensa ID to start with
     private static final String INITIAL_MENSA_ID = "79";
 
-    private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
-    private LinearLayoutManager mLayoutManager;
-
     private RequestQueue queue;
     // List containing of meals containing all informations e.g. description, price, ...
     private List<Meal> displayedMeals;
@@ -67,9 +66,9 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         // linear layout manager for arranging meals under each other
-        mLayoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         initMealList();

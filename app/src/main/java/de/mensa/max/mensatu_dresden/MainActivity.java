@@ -1,12 +1,14 @@
 package de.mensa.max.mensatu_dresden;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -36,16 +38,16 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         // Instantiate the RequestQueue.
@@ -54,21 +56,30 @@ public class MainActivity extends AppCompatActivity
 
         meals = new LinkedList<>();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, meals);
-        ListView lvMeals = (ListView) findViewById(R.id.lvMeals);
+        ListView lvMeals = findViewById(R.id.lvMeals);
         lvMeals.setAdapter(adapter);
     }
 
-    private void addMeals(String rawData, String date) {
-        List<Meal> mealsToday = parseData(rawData);
-
+    /**
+     * @param mealsToday - list with meals for the given date
+     * @param date       - date corresponding to the given date
+     */
+    private void addMeals(List<Meal> mealsToday, String date) {
         meals.add(String.format("--- %s ---", date));
-        for (int i=0; i < mealsToday.size(); i++) {
-            meals.add(mealsToday.get(i).name);
+        for (Meal meal : mealsToday) {
+            String mealString = meal.getName() + " " + meal.getStudentPrice();
+            meals.add(mealString);
         }
-
         adapter.notifyDataSetChanged();
     }
 
+    /**
+     * parse the received json data for one days meals
+     * to a list with meals
+     *
+     * @param rawData - json data returned by the request
+     * @return list with meals
+     */
     private List<Meal> parseData(String rawData) {
         List<Meal> meals = new ArrayList<>();
         JSONParser jsonParser = new JSONParser();
@@ -81,18 +92,35 @@ public class MainActivity extends AppCompatActivity
         return meals;
     }
 
+    /**
+     * update mensa title and dispatch requests for fetching new meals
+     * till next Sunday
+     *
+     * @param newMensaID - id of the new selected mensa
+     */
     void handleMensaChange(String newMensaID) {
         updateTitle(getMensaName(newMensaID));
         meals.clear();
-        for (String date:  DateHelper.getWeekDatesTillSunday())
+        for (String date : DateHelper.getNextSevenDays())
             fetchMealsData(newMensaID, date);
     }
 
+    /**
+     * Set the given string as new title
+     *
+     * @param title - mew toolbar title
+     */
     private void updateTitle(String title) {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(title);
     }
 
+    /**
+     * get to id corresponding mensa name
+     *
+     * @param mensaID
+     * @return mensa name corresponding to mensaID
+     */
     private String getMensaName(String mensaID) {
         switch (mensaID) {
             case "78":
@@ -104,7 +132,7 @@ public class MainActivity extends AppCompatActivity
             case "85":
                 return "WUeins";
             default:
-                return "kenn ich nicht";
+                throw new IllegalArgumentException("unknown id");
         }
     }
 
@@ -119,13 +147,14 @@ public class MainActivity extends AppCompatActivity
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        addMeals(response, date);
+                        addMeals(parseData(response), date);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // ToDo implement proper error handling like notifying the user
-                System.out.println("That didn't work! No connection?");
+                Log.e("MainActivity", "That didn't work! No connection?");
+                Log.e("MainActivity", error.toString());
             }
         });
         // Add the request to the RequestQueue.
@@ -156,7 +185,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -164,22 +193,31 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /***
+     * handle selection of another mensa
+     * @param item selected menu item
+     * @return returns that selection got handled
+     */
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_alte_mensa) {
-            handleMensaChange("79");
-        } else if (id == R.id.nav_zelt_schloss) {
-            handleMensaChange("78");
-        } else if (id == R.id.nav_siedepunkt) {
-            handleMensaChange("82");
-        } else if (id == R.id.nav_wu_eins) {
-            handleMensaChange("85");
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_alte_mensa:
+                handleMensaChange("79");
+                break;
+            case R.id.nav_zelt_schloss:
+                handleMensaChange("78");
+                break;
+            case R.id.nav_siedepunkt:
+                handleMensaChange("82");
+                break;
+            case R.id.nav_wu_eins:
+                handleMensaChange("85");
+                break;
+            default:
+                Log.i("MainActivity", "mapping to mensa item not found...");
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

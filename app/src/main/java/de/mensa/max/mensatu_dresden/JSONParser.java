@@ -26,7 +26,7 @@ public class JSONParser {
         }
     }
 
-    public List<Meal> readMealsArray(JsonReader reader) throws IOException {
+    private List<Meal> readMealsArray(JsonReader reader) throws IOException {
         List<Meal> meals = new ArrayList<>();
 
         reader.beginArray();
@@ -37,10 +37,10 @@ public class JSONParser {
         return meals;
     }
 
-    public Meal readMeal(JsonReader reader) throws IOException {
+    private Meal readMeal(JsonReader reader) throws IOException {
         String id = "-1";
-        String mealName = "unbekannt";
-        String category = "unbekannt";
+        String mealName = "unknown";
+        String category = "unknown";
         Map<String, String> prices = new HashMap<>();
         List<String> notes = new ArrayList<>();
 
@@ -71,7 +71,7 @@ public class JSONParser {
         return new Meal(id, mealName, notes, prices, category);
     }
 
-    public List<String> readStringArray(JsonReader reader) throws IOException {
+    private List<String> readStringArray(JsonReader reader) throws IOException {
         List<String> stringArray = new ArrayList<>();
 
         reader.beginArray();

@@ -27,7 +27,6 @@ class Meal {
         this.name = name;
         this.notes = notes;
         this.prices = prices;
-        Log.d("Meal", "" + prices.getClass());
         this.category = category;
     }
 

@@ -14,31 +14,35 @@ import java.util.List;
  * created by MaX-Lo on 17.06.2018
  */
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+public class MealRecyclerViewAdapter extends RecyclerView.Adapter<MealRecyclerViewAdapter.ViewHolder> {
     private List<Meal> meals;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         public TextView tvDescription;
         public TextView tvPrice;
+        public TextView tvCategory;
 
         ViewHolder(View itemView) {
             super(itemView);
 
             tvDescription = (TextView) itemView.findViewById(R.id.tvDescription);
             tvPrice = (TextView) itemView.findViewById(R.id.tvPrice);
+            tvCategory = (TextView) itemView.findViewById(R.id.tvCategory);
         }
     }
 
-    MyAdapter(List<Meal> meals) {
+    MealRecyclerViewAdapter(List<Meal> meals) {
         this.meals = meals;
     }
 
-    // Create new views (invoked by the layout manager)
+    /**
+     * Create a new view holder containing later the meal items
+     */
     @NonNull
     @Override
-    public MyAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
-                                                   int viewType) {
+    public MealRecyclerViewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+                                                                 int viewType) {
         // create a new view
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.my_item_view, parent, false);
@@ -56,7 +60,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
         holder.tvDescription.setText(meals.get(position).getName());
         holder.tvPrice.setText(meals.get(position).getStudentPrice());
-
+        holder.tvCategory.setText(meals.get(position).getCategory());
     }
 
     @Override

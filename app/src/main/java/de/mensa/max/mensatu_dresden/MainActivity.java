@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
         initMealList();
         displayedMeals = new LinkedList<Meal>();
         // adapter for putting data into view
-        mAdapter = new MyAdapter(displayedMeals);
+        mAdapter = new MealRecyclerViewAdapter(displayedMeals);
         mRecyclerView.setAdapter(mAdapter);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),

@@ -4,32 +4,44 @@
     android:id="@+id/llItem"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="8dip"
     android:paddingBottom="8dp"
-    android:orientation="horizontal"
-    android:weightSum="1.0">
+    android:paddingTop="8dip"
+    android:orientation="vertical">
 
     <TextView
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/tvDescription"
-        android:layout_width="match_parent"
+        android:id="@+id/tvCategory"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Meal Description"
-        android:layout_marginRight="2dp"
-        android:layout_weight="0.18"
-        android:textSize="18sp"
-        android:textColor="@color/textBlack"
-        />
+        android:text="@string/category"
+        android:textSize="19sp"
+        android:textColor="@color/colorPrimary"/>
 
-    <TextView
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/tvPrice"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/llItemSecondRow"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Price"
-        android:layout_weight="0.82"
-        android:textAlignment="viewEnd"
-        android:textSize="16sp"
-        android:textColor="@color/textGrey" />
+        android:orientation="horizontal"
+        android:weightSum="1.0">
 
+        <TextView xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:layout_weight="0.18"
+            android:text="@string/meal_description"
+            android:textColor="@color/textBlack"
+            android:textSize="16sp" />
+
+        <TextView xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/tvPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.82"
+            android:text="@string/price"
+            android:textAlignment="viewEnd"
+            android:textColor="@color/textGrey"
+            android:textSize="14sp" />
+
+    </LinearLayout>
 </LinearLayout>

@@ -1,5 +1,7 @@
 package de.mensa.max.mensatu_dresden.Helpers;
 
+import android.content.Context;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,6 +10,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+
+import de.mensa.max.mensatu_dresden.R;
 
 public class DateHelper {
 
@@ -44,12 +48,12 @@ public class DateHelper {
         return dates;
     }
 
-    public static List<String> getNextNWeekdays(int n) {
+    public static List<String> getNextNWeekdays(int n, Context context) {
         Calendar cal = Calendar.getInstance();
-        String[] Weekdays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        String[] weekdays = context.getResources().getStringArray(R.array.weekdays);
         List<String> nextNWeekdays = new LinkedList<>();
         for (int i=0; i < n; i++) {
-            nextNWeekdays.add(Weekdays[cal.get(Calendar.DAY_OF_WEEK) - 1]);
+            nextNWeekdays.add(weekdays[cal.get(Calendar.DAY_OF_WEEK) - 1]);
             cal.add(Calendar.DATE, 1);
         }
         return nextNWeekdays;

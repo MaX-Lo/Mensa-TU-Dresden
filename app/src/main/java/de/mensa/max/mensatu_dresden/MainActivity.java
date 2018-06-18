@@ -7,7 +7,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -32,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.mensa.max.mensatu_dresden.Helpers.DateHelper;
+import de.mensa.max.mensatu_dresden.Helpers.JSONParser;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -76,10 +76,6 @@ public class MainActivity extends AppCompatActivity
         // adapter for putting data into view
         mAdapter = new MealRecyclerViewAdapter(displayedMeals);
         mRecyclerView.setAdapter(mAdapter);
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
-                mLayoutManager.getOrientation());
-        mRecyclerView.addItemDecoration(dividerItemDecoration);
 
         dateSpinner = (Spinner) findViewById(R.id.spinner_nav);
         dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -154,11 +150,12 @@ public class MainActivity extends AppCompatActivity
         initMealList(); // ToDo remove later
 
         List<String> dates = DateHelper.getNextNDays(FORECAST);
-        List<String> weekdays = DateHelper.getNextNWeekdays(FORECAST);
+        List<String> weekdays = DateHelper.getNextNWeekdays(FORECAST, this);
 
         for (int i=0; i < dates.size(); i++) {
             fetchMealsData(newMensaID, dates.get(i), i);
         }
+
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, weekdays);
@@ -185,7 +182,7 @@ public class MainActivity extends AppCompatActivity
     private String getMensaName(String mensaID) {
         switch (mensaID) {
             case "78":
-                return "Zeltschloessschen";
+                return "Zeltschlössschen";
             case "79":
                 return "Alte Mensa";
             case "82":

@@ -1,4 +1,4 @@
-package de.mensa.max.mensatu_dresden;
+package de.mensa.max.mensatu_dresden.Helpers;
 
 import android.util.JsonReader;
 import android.util.JsonToken;
@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.mensa.max.mensatu_dresden.Meal;
 
 /**
  * Created by max on 28.12.17.

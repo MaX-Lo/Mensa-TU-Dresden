@@ -10,7 +10,7 @@ import de.mensa.max.mensatu_dresden.Helpers.FormatHelper;
  * Created by max on 28.12.17.
  */
 
-class Meal {
+public class Meal {
 
     private String id;
     private String name;
@@ -18,7 +18,7 @@ class Meal {
     private Map<String, String> prices;
     private String category;
 
-    Meal(
+    public Meal(
             String id,
             String name,
             List<String> notes,
@@ -64,7 +64,7 @@ class Meal {
     }
 
     public String getStudentPrice() {
-        return prices.containsKey("students") ? "(" + prices.get("students") + "€)" : "";
+        return prices.containsKey("students") ? prices.get("students") + "€" : "";
     }
 
     public void setPrices(Map<String, String> prices) {

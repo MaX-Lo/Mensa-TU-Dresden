@@ -20,7 +20,6 @@ public class JSONParser {
 
     public List<Meal> readJson(String rawData) throws IOException {
         JsonReader reader = new JsonReader(new StringReader(rawData));
-        System.out.println(rawData);
         try {
             return readMealsArray(reader);
         } finally {

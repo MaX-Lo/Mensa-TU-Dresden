@@ -4,12 +4,11 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
-
-    <string name="category">Category</string>
-    <string name="meal_description">Meal Description</string>
-    <string name="price">Price</string>
+    <string name="category">Kategorie</string>
+    <string name="meal_description">Beschreibung</string>
+    <string name="price">Preis</string>
     <string name="mensen">Mensen</string>
+    <string name="closed">geschlossen</string>
 
     <string-array name="weekdays">
         <item>Sontag</item>

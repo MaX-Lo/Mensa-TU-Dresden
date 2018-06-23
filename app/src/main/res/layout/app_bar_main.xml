@@ -31,5 +31,6 @@
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_main" />
+    <include layout="@layout/content_main_if_closed" />
 
 </android.support.design.widget.CoordinatorLayout>

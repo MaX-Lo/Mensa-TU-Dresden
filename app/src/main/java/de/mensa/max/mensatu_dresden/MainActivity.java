@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity
 
     private RecyclerView.Adapter mAdapter;
     private RequestQueue queue;
-    // List containing of meals containing all informations e.g. description, price, ...
+    // List containing of meals containing all information e.g. description, price, ...
     private List<Meal> displayedMeals;
     private List<List<Meal>> dailyMeals;
     private Spinner dateSpinner;
@@ -95,15 +95,33 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     *
-     * @param index days between today and day that should be displayed
+     * @param index - number of days between today and furthest day that should be displayed
      */
     private void updateShownDay(int index) {
-        Log.e("index", "index" + index );
         displayedMeals.clear();
         displayedMeals.addAll(dailyMeals.get(index));
         mAdapter.notifyDataSetChanged();
+
+        if (isMensaClosed()) {
+            displayClosedView(true);
+        } else {
+            displayClosedView(false);
+        }
     }
+
+    private boolean isMensaClosed() {
+        return mAdapter.getItemCount() == 0;
+    }
+
+    private void displayClosedView(boolean isClosed) {
+        View closedLayout = findViewById(R.id.closedLayout);
+        if (isClosed) {
+            closedLayout.setVisibility(View.VISIBLE);
+        } else {
+            closedLayout.setVisibility(View.GONE);
+        }
+    }
+
 
     private void initMealList() {
         dailyMeals = new LinkedList<List<Meal>>();
@@ -175,8 +193,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * get to id corresponding mensa name
-     * @param mensaID
+     * get corresponding mensa name to id
+     * @param mensaID - mensa ID you want the name from
      * @return mensa name corresponding to mensaID
      */
     private String getMensaName(String mensaID) {
@@ -194,8 +212,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Fetch meals for one week. Starting with current date and ending with Sunday.
+
+    /***
+     * fetch meals data from OpenMensa API
+     *
+     * @param mensaID - mensa you want the meals data from
+     * @param date - for which date the meal data gets fetched
+     * @param index - request number, needed to put the response into the correct dailyMeals Entry
      */
     public void fetchMealsData(String mensaID, final String date, final int index) {
         String url = ENDPOINT + String.format("/canteens/%s/days/:%s/meals", mensaID, date);

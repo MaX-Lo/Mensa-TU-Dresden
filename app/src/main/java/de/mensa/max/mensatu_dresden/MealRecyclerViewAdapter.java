@@ -37,17 +37,16 @@ public class MealRecyclerViewAdapter extends RecyclerView.Adapter<MealRecyclerVi
     }
 
     /**
-     * Create a new view holder containing later the meal items
+     * Create a new view holder containing later a meal item
      */
     @NonNull
     @Override
     public MealRecyclerViewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
                                                                  int viewType) {
         // create a new view
-        LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
+        LinearLayout mealView = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.my_item_view, parent, false);
-
-        return new ViewHolder(v);
+        return new ViewHolder(mealView);
     }
 
     /**

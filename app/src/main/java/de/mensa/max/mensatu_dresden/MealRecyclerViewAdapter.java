@@ -57,7 +57,7 @@ public class MealRecyclerViewAdapter extends RecyclerView.Adapter<MealRecyclerVi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        holder.tvDescription.setText(meals.get(position).getName());
+        holder.tvDescription.setText(meals.get(position).getDescription());
         holder.tvPrice.setText(meals.get(position).getStudentPrice());
         holder.tvCategory.setText(meals.get(position).getCategory());
     }

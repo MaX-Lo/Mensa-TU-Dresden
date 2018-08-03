@@ -16,104 +16,100 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import de.mensa.max.mensatu_dresden.Helpers.DateHelper;
-import de.mensa.max.mensatu_dresden.Helpers.JSONParser;
+import de.mensa.max.mensatu_dresden.Helpers.Mensen;
+import de.mensa.max.mensatu_dresden.Helpers.OpenMensaAPI;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final String ENDPOINT = "http://openmensa.org/api/v2";
-    // determine how many days can get looked ahead
+    // determines how many days can get looked ahead
     private static final int FORECAST = 7;
-    // Mensa ID to start with
+    // ID from Mensa being displayed on startup
     private static final String INITIAL_MENSA_ID = "79";
 
-    private RecyclerView.Adapter mAdapter;
-    private RequestQueue queue;
-    // List containing of meals containing all information e.g. description, price, ...
+    // a flexible view for providing a limited window into a large data set
+    private RecyclerView.Adapter mealViewAdapter;
+
+    // meals for chosen mensa and date
     private List<Meal> displayedMeals;
-    private List<List<Meal>> dailyMeals;
+    // all meals for chosen mensa
+    private List<List<Meal>> dailyMealsLists;
+    private OpenMensaAPI openMensaAPI;
+
     private Spinner dateSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(getMensaName(INITIAL_MENSA_ID));
+        toolbar.setTitle(Mensen.idToName(INITIAL_MENSA_ID));
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
-        toggle.syncState();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        RecyclerView mRecyclerView = findViewById(R.id.my_recycler_view);
         // linear layout manager for arranging meals under each other
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        initMealList();
         displayedMeals = new LinkedList<Meal>();
         // adapter for putting data into view
-        mAdapter = new MealRecyclerViewAdapter(displayedMeals);
-        mRecyclerView.setAdapter(mAdapter);
+        mealViewAdapter = new MealRecyclerViewAdapter(displayedMeals);
+        mRecyclerView.setAdapter(mealViewAdapter);
 
-        dateSpinner = (Spinner) findViewById(R.id.spinner_nav);
+        dateSpinner = findViewById(R.id.spinner_nav);
         dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateShownDay(position);
+                if (dailyMealsLists.size() != 0) {
+                    updateShownMeals(dailyMealsLists.get(position));
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
 
-        // Instantiate the RequestQueue.
-        queue = Volley.newRequestQueue(this);
+        dailyMealsLists = new LinkedList<>();
+        openMensaAPI = new OpenMensaAPI(this);
 
         handleMensaChange(INITIAL_MENSA_ID);
     }
 
     /**
-     * @param index - number of days between today and furthest day that should be displayed
+     * update view with @param shownMeals data or display a 'closed' notification image when no
+     * meals are available (List is empty)
      */
-    private void updateShownDay(int index) {
+    private void updateShownMeals(List<Meal> shownMeals) {
         displayedMeals.clear();
-        displayedMeals.addAll(dailyMeals.get(index));
-        mAdapter.notifyDataSetChanged();
+        displayedMeals.addAll(shownMeals);
+        mealViewAdapter.notifyDataSetChanged();
 
-        if (isMensaClosed()) {
-            displayClosedView(true);
-        } else {
-            displayClosedView(false);
-        }
+        showClosedView(isMensaClosed());
     }
 
     private boolean isMensaClosed() {
-        return mAdapter.getItemCount() == 0;
+        return mealViewAdapter.getItemCount() == 0;
     }
 
-    private void displayClosedView(boolean isClosed) {
+    /**
+     * toggle view with image indicating the mensa is closed
+     * @param isClosed - true if mensa is closed
+     */
+    private void showClosedView(boolean isClosed) {
         View closedLayout = findViewById(R.id.closedLayout);
         if (isClosed) {
             closedLayout.setVisibility(View.VISIBLE);
@@ -122,69 +118,23 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-    private void initMealList() {
-        dailyMeals = new LinkedList<List<Meal>>();
-        for (int i=0; i < FORECAST; i++) {
-            dailyMeals.add(new ArrayList<Meal>());
-        }
-    }
-
-    /**
-     * @param mealsToday - list with meals for the given date
-     * @param date       - date corresponding to the given date
-     */
-    private void addMeals(List<Meal> mealsToday, String date, int index) {
-        dailyMeals.set(index, mealsToday);
-    }
-
-    /**
-     * parse the received json data for one days meals
-     * to a list with meals
-     *
-     * @param rawData - json data returned by the request
-     * @return list with meals
-     */
-    private List<Meal> parseData(String rawData) {
-        List<Meal> meals = new ArrayList<>();
-        JSONParser jsonParser = new JSONParser();
-        try {
-            meals = jsonParser.readJson(rawData);
-        } catch (IOException e) {
-            Log.e("MainActivity","Error while parsing Json");
-            e.printStackTrace();
-        }
-        return meals;
-    }
-
     /**
      * update mensa title and dispatch requests for fetching new meals
-     * till next Sunday
-     *
      * @param newMensaID - id of the new selected mensa
      */
     void handleMensaChange(String newMensaID) {
-        updateTitle(getMensaName(newMensaID));
-        initMealList(); // ToDo remove later
+        updateTitle(Mensen.idToName(newMensaID));
 
         List<String> dates = DateHelper.getNextNDays(FORECAST);
         List<String> weekdays = DateHelper.getNextNWeekdays(FORECAST, this);
 
-        for (int i=0; i < dates.size(); i++) {
-            fetchMealsData(newMensaID, dates.get(i), i);
-        }
+        openMensaAPI.getMeals(newMensaID, dates);
+        updateDateSpinner(weekdays);
 
-
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, weekdays);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        dateSpinner.setAdapter(adapter);
     }
 
     /**
-     * Set the given string as new title
+     * Set the given string as new action-/toolbar title
      * @param title - mew toolbar title
      */
     private void updateTitle(String title) {
@@ -192,70 +142,25 @@ public class MainActivity extends AppCompatActivity
         toolbar.setTitle(title);
     }
 
+    void updateDateSpinner(List<String> items) {
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        dateSpinner.setAdapter(adapter);
+    }
+
     /**
-     * get corresponding mensa name to id
-     * @param mensaID - mensa ID you want the name from
-     * @return mensa name corresponding to mensaID
+     * callback method, gets called after requests have been completed
+     * @param dailyMealsLists - meal data received in replies
      */
-    private String getMensaName(String mensaID) {
-        switch (mensaID) {
-            case "78":
-                return "Zeltschlössschen";
-            case "79":
-                return "Alte Mensa";
-            case "82":
-                return "Siedepunkt";
-            case "85":
-                return "WUeins";
-            default:
-                throw new IllegalArgumentException("unknown id");
-        }
+    public void onReceivedMeals(List<List<Meal>> dailyMealsLists) {
+        this.dailyMealsLists = dailyMealsLists;
+        updateShownMeals(dailyMealsLists.get(0));
     }
 
-
-    /***
-     * fetch meals data from OpenMensa API
-     *
-     * @param mensaID - mensa you want the meals data from
-     * @param date - for which date the meal data gets fetched
-     * @param index - request number, needed to put the response into the correct dailyMeals Entry
-     */
-    public void fetchMealsData(String mensaID, final String date, final int index) {
-        String url = ENDPOINT + String.format("/canteens/%s/days/:%s/meals", mensaID, date);
-
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        addMeals(parseData(response), date, index);
-                        if (index==0) {
-                            updateShownDay(index);
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("MainActivity", error.toString());
-                Toast.makeText(getApplicationContext(), "That didn't work! No connection?",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    /***
+    /**
      * handle selection of another mensa
      * @param item selected menu item
      * @return returns that selection got handled
@@ -282,5 +187,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

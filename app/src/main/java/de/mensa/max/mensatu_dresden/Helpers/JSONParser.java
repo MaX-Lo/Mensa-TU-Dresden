@@ -69,7 +69,25 @@ public class JSONParser {
             }
         }
         reader.endObject();
-        return new Meal(id, mealName, notes, prices, category);
+
+        // ToDo until OpenMensaAPI is fixed some manual corrections are necessary
+        return fixAPIInconsistencies(new Meal(id, mealName, notes, prices, category));
+    }
+
+    private Meal fixAPIInconsistencies(Meal meal) {
+        if (meal.getDescription().contains("Pizza")) {
+            meal.setCategory("Pizza");
+            meal.setStudentPrice("1,77 / 2,66");
+        }
+        if (meal.getDescription().contains("Hausgemachte frische Pasta")) {
+            meal.setCategory("Hausgemachte Pasta");
+            meal.setDescription(meal.getDescription().replace("Hausgemachte frische Pasta, heute ", ""));
+        }
+        if (meal.getCategory().equals("Pasta")) {
+            meal.setStudentPrice("1,67 / 2,36");
+        }
+
+        return meal;
     }
 
     private List<String> readStringArray(JsonReader reader) throws IOException {

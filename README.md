@@ -4,3 +4,4 @@
 Minimalistic Mensa App for Mensen at TU Dresden, Germany.
 
 Uses OpenMensa API for receiving its data.
+

@@ -1,6 +1,5 @@
 package de.mensa.max.mensatu_dresden.Helpers;
 
-import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
